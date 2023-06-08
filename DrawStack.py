@@ -16,3 +16,7 @@ class DrawStack:
     
     def createstack(self):
         for
+
+x = 3
+
+y = 2
