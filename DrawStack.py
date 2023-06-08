@@ -18,3 +18,5 @@ class DrawStack:
         for
 
 x = 3
+
+y = 2
