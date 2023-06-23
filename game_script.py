@@ -23,6 +23,9 @@ kaarten = []
 
 objects = []
 
+computer = 0
+speler = 0
+
 colours = {0: 'green', 1: 'purple', 2: 'red'}
 shapes = {0: 'diamond', 1: 'oval', 2: 'squiggle'}
 filling = {0: 'empty', 1: 'filled', 2: 'shaded'}
@@ -34,57 +37,69 @@ class Card:
         self.vorm = vorm
         self.opvulling = opvulling
         self.aantal = aantal
-        self.attrs = (kleur, vorm, opvulling, aantal)
+        self.eigenschappen = (kleur, vorm, opvulling, aantal)
 
-    def isset(self, kaart1, kaart2):
-        def allsame(v0, v1, v2):
+    def is_set(self, kaart1, kaart2):
+        def allemaal_hetzelfde(v0, v1, v2):
             return v0 == v1 and v1 == v2
 
-        def alldifferent(v0, v1, v2):
+        def allemaal_anders(v0, v1, v2):
             return len({v0, v1, v2}) == 3
 
-        return all(allsame(v0, v1, v2) or alldifferent(v0, v1, v2)
-                   for (v0, v1, v2) in zip(self.attrs, kaart1.attrs, kaart2.attrs))
+        return all(allemaal_hetzelfde(v0, v1, v2) or allemaal_anders(v0, v1, v2)
+                   for (v0, v1, v2) in zip(self.eigenschappen,
+                                            kaart1.eigenschappen, 
+                                            kaart2.eigenschappen))
 
+    
     @staticmethod
-    def allcards():
-        return [Card(att0, att1, att2, att3)
-                for att0 in (0, 1, 2)
-                for att1 in (0, 1, 2)
-                for att2 in (0, 1, 2)
-                for att3 in (0, 1, 2)
+    def alle_kaarten():
+        return [Card(eigenschap1, eigenschap2, eigenschap3, eigenschap4)
+                for eigenschap1 in (0, 1, 2)
+                for eigenschap2 in (0, 1, 2)
+                for eigenschap3 in (0, 1, 2)
+                for eigenschap4 in (0, 1, 2)
                 ]
-
+    
     def __str__(self):
-        return str(self.attrs)
+        return str(self.eigenschappen)
 
 class Table:
-    def __init__(self, n=12):
-        self.cards = random.sample(Card.allcards(), n)
+    def __init__(self, n=12):                       
+        self.deck = Card.alle_kaarten()
+        drawn_idxs = random.sample(range(81), n)
+        self.cards = [self.deck[i] for i in range(81) if i in drawn_idxs]
+        self.deck = [self.deck[i] for i in range(81) if i not in drawn_idxs]
+
+    def kaart_van_tafel_halen(self, idx):                 
+        n = len(self.cards)
+        self.cards = [self.cards[i] for i in range(n) if i not in idx]
+        return self.cards
+         
+    def nieuwe_kaart_trekken(self):                                
+        n = len(self.deck)
+        idx = random.randint(0, n-1)
+        new_card = self.deck.pop(idx)
+        self.cards.append(new_card)
+        return new_card
 
     def __str__(self):
         return str(self.cards)
 
-    def findsets_gnt(self):
+    def vind_set(self):
         found = []
+        idxs = []
         for i, ci in enumerate(self.cards):
             for j, cj in enumerate(self.cards[i+1:], i+1):
                 for k, ck in enumerate(self.cards[j+1:], j+1):
-                    if ci.isset(cj, ck):
+                    if ci.is_set(cj, ck):
                         found.append((ci, cj, ck))
-        return found
-
-    def findsets_gnt_mod(self):
-        found = []
-        for i, ci in enumerate(self.cards):
-            for j, cj in enumerate(self.cards[i+1:], i+1):
-                for k, ck in enumerate(self.cards[j+1:], j+1):
-                    if ci.isset(cj, ck):
-                        found.append((ci, cj, ck))
-        return found
+                        idxs.append((i,j,k))
+        return found, idxs
 
     def naam_kaart(self):
         return [str(c) for c in self.cards]
+
 
 colours = {0: 'green', 1: 'purple', 2: 'red'}
 shapes = {0: 'diamond', 1: 'oval', 2: 'squiggle'}
@@ -154,6 +169,7 @@ class Button():
         kaarten = Prep.filenames(cardtup)
         return kaarten
 
+
 cardButton0 = Button(350, 25, 100, 200, '0')
 cardButton1 = Button(550, 25, 100, 200, '1')
 cardButton2 = Button(750, 25, 100, 200, '2')
@@ -167,26 +183,41 @@ cardButton9 = Button(350, 775, 100, 200, '9')
 cardButton10 = Button(550, 775, 100, 200, '10')
 cardButton11 = Button(750, 775, 100, 200, '11')
 
-pc = 0
-player = 0
-z = Table()
+x = Table()
 
-Tafel = z.naam_kaart()
-
-print(Tafel)
+Tafel = x.naam_kaart()
 
 kaarten = Prep.filenames(Tafel)
 
 foundsets = []
 
-foundsets = z.findsets_gnt()
+def goede_set_gegegeven():
+    print("Je gegeven antwoord is goed! "+ '\n')
 
-for tup in foundsets:
-    x1 = str(tup[0])
-    x2 = str(tup[1])
-    x3 = str(tup[2])
-    xlijst = [x1, x2, x3]
+def foute_set_gegeven():
+    print('Probeer opnieuw... ')
+    kaarten_die_weg_moeten = [0,1,2]
+    drie_kaarten_verwijderd = x.kaart_van_tafel_halen(kaarten_die_weg_moeten)
+    x.nieuwe_kaart_trekken()
+    x.nieuwe_kaart_trekken()
+    x.nieuwe_kaart_trekken()
+    return drie_kaarten_verwijderd
 
+def computer_vindt_set():
+    gevonden_sets, idxsset = x.vind_set()
+    if gevonden_sets:
+        kaarten_die_weg_moeten = x.kaart_van_tafel_halen(idxsset[0])
+        for i in range(3):
+            x.nieuwe_kaart_trekken()
+        print(idxsset)
+
+    else:
+        kaarten_die_weg_moeten = foute_set_gegeven()
+    return kaarten_die_weg_moeten
+
+#def kaarten():
+#    print(x.naam_kaart())
+#    print()
 
 while running:
 
@@ -202,6 +233,8 @@ while running:
     screen.fill("forestgreen")
 
     screen.blit(font.render(tijd, True, (0,0,0)), (560, 25))
+    screen.blit(font.render("computer: " + str(computer), True, (0,0,0)), (50,100))
+    screen.blit(font.render("speler: " + str(speler), True, (0,0,0)), (50,150))
 
     for object in objects:
         object.onclick()
@@ -217,7 +250,46 @@ while running:
             screen.blit(kaart4, (350+200*i, 775))
 
     if len(pot_set) == 3:
-        print(str(pot_set[0]) + ' ' + str(pot_set[1]) + ' ' + str(pot_set[2]))
+        gekozen_kaarten = str(pot_set[0]) + ',' + str(pot_set[1]) + ',' + str(pot_set[2])
+        gekozen_positie = []
+
+        for positie in gekozen_kaarten.split(","):
+            positie = positie.strip()
+            gekozen_positie.append(int(positie))
+            gekozen_positie.sort()
+        print(gekozen_positie)
+        if all(1 <= positie <= len(x.cards) for positie in gekozen_positie):
+            gekozen_kaarten = [x.cards[positie - 1] for positie in gekozen_positie]
+            gekozen_kaarten = []
+            for positie in gekozen_positie:
+                gekozen_kaarten.append(x.cards[positie -1])
+
+            print(gekozen_kaarten)
+            if gekozen_kaarten[0].is_set(gekozen_kaarten[1], gekozen_kaarten[2]):
+                goede_set_gegegeven()
+                speler = speler + 1
+                verwijder_kaart_uit_tabel = []
+                for positie in gekozen_positie:
+                    verwijder_kaart_uit_tabel.append(positie - 1)
+                    x.kaart_van_tafel_halen(verwijder_kaart_uit_tabel)
+                for i in range(3):
+                    x.nieuwe_kaart_trekken()
+
+                kaarten = Prep.filenames(Tafel)
+                pot_set.clear()
+            else:
+                print('Dit is geen set...')
+                removed_cards = computer_vindt_set()
+                kaarten = Prep.filenames(Tafel)
+                computer = computer + 1
+                pot_set.clear()
+    #else:
+        #print('Je moet een kaart kiezen.')
+
+
+
+
+        print("voorbij")
         pot_set.clear()
         
     pygame.display.flip()
