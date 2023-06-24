@@ -258,11 +258,11 @@ while running:
             gekozen_positie.append(int(positie))
             gekozen_positie.sort()
         print(gekozen_positie)
-        if all(1 <= positie <= len(x.cards) for positie in gekozen_positie):
-            gekozen_kaarten = [x.cards[positie - 1] for positie in gekozen_positie]
+        if all(0 <= positie <= (len(x.cards)-1) for positie in gekozen_positie):
+            gekozen_kaarten = [x.cards[positie] for positie in gekozen_positie]
             gekozen_kaarten = []
             for positie in gekozen_positie:
-                gekozen_kaarten.append(x.cards[positie -1])
+                gekozen_kaarten.append(x.cards[positie])
 
             print(gekozen_kaarten)
             if gekozen_kaarten[0].is_set(gekozen_kaarten[1], gekozen_kaarten[2]):
@@ -270,25 +270,22 @@ while running:
                 speler = speler + 1
                 verwijder_kaart_uit_tabel = []
                 for positie in gekozen_positie:
-                    verwijder_kaart_uit_tabel.append(positie - 1)
+                    verwijder_kaart_uit_tabel.append(positie)
                     x.kaart_van_tafel_halen(verwijder_kaart_uit_tabel)
                 for i in range(3):
                     x.nieuwe_kaart_trekken()
-
+                Tafel = x.naam_kaart()
                 kaarten = Prep.filenames(Tafel)
                 pot_set.clear()
             else:
                 print('Dit is geen set...')
                 removed_cards = computer_vindt_set()
+                Tafel = x.naam_kaart()
                 kaarten = Prep.filenames(Tafel)
                 computer = computer + 1
                 pot_set.clear()
-    #else:
-        #print('Je moet een kaart kiezen.')
-
-
-
-
+        else:
+            print('Je moet een kaart kiezen.')
         print("voorbij")
         pot_set.clear()
         
