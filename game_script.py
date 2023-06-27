@@ -271,7 +271,7 @@ while running:
                 verwijder_kaart_uit_tabel = []
                 for positie in gekozen_positie:
                     verwijder_kaart_uit_tabel.append(positie)
-                    x.kaart_van_tafel_halen(verwijder_kaart_uit_tabel)
+                x.kaart_van_tafel_halen(verwijder_kaart_uit_tabel)
                 for i in range(3):
                     x.nieuwe_kaart_trekken()
                 Tafel = x.naam_kaart()
