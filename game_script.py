@@ -1,5 +1,6 @@
 import pygame
 import random
+import os
 
 pygame.init()
 
@@ -122,6 +123,7 @@ class Prep():
                 amount.get(int(cardtup[i][10]))
             ))
         return cardfiles
+
             
 class Button():
     
@@ -214,10 +216,6 @@ def computer_vindt_set():
     else:
         kaarten_die_weg_moeten = foute_set_gegeven()
     return kaarten_die_weg_moeten
-
-#def kaarten():
-#    print(x.naam_kaart())
-#    print()
 
 while running:
 
